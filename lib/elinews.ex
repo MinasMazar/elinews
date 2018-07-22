@@ -23,19 +23,29 @@ defmodule Elinews do
     @news_feed
   end
 
-  @doc """
-  iex> Elinews.retrieve_news |> length() > 0
-  true
-  """
+  def run do
+    run(%{})
+  end
 
-  def retrieve_news(criteria) do
-    {field, keyword} = hd criteria
-    retrieve_news()
-    |> filter(field, keyword)
+  def run(criteria) do
+    retrieve_news(criteria)
+    |> display()
   end
 
   @doc """
   iex> Elinews.retrieve_news(title: "trump") |> length() > 0
+  true
+  iex> Elinews.retrieve_news(title: "trump", description: "papillon") |> length() > 0
+  true
+  """
+
+  def retrieve_news(criteria) do
+    retrieve_news()
+    |> filter(criteria)
+  end
+
+  @doc """
+  iex> Elinews.retrieve_news |> length() > 0
   true
   """
 
@@ -43,6 +53,17 @@ defmodule Elinews do
     HTTPotion.get(@news_feed, follow_redirects: true).body
     |> Floki.find("item")
     |> Enum.map(&item_map(&1))
+  end
+
+  def display(news_entries) when is_list(news_entries) do
+    news_entries |> Enum.map(&display(&1))
+  end
+
+  def display(news_entry) do
+    news_entry_displayed = """
+    News entry: #{news_entry.title}
+    """
+    IO.puts(news_entry_displayed)
   end
 
   defp item_map(item) do
@@ -54,6 +75,15 @@ defmodule Elinews do
       ]
     } = item
     %NewsEntry{title: hd(title), description: description, link: link}
+  end
+
+  defp filter(items, criteria) when is_list(criteria) do
+    criteria
+    |> Enum.map(fn(criteria) ->
+      {field, value} = criteria
+      filter(items, field, value)
+      end)
+    |> Enum.reduce([], fn(item,acc) -> [acc | item] end)
   end
 
   defp filter(items, field, value) do
