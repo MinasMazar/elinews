@@ -15,15 +15,29 @@ defmodule Elinews do
 
   """
 
+  defmodule NewsEntry do
+    defstruct [:title, :description, :link]
+  end
+
   def news_feed do
     @news_feed
   end
+
+  @doc """
+  iex> Elinews.retrieve_news |> length() > 0
+  true
+  """
 
   def retrieve_news(criteria) do
     {field, keyword} = hd criteria
     retrieve_news()
     |> filter(field, keyword)
   end
+
+  @doc """
+  iex> Elinews.retrieve_news(title: "trump") |> length() > 0
+  true
+  """
 
   def retrieve_news do
     HTTPotion.get(@news_feed, follow_redirects: true).body
@@ -39,11 +53,14 @@ defmodule Elinews do
         | _
       ]
     } = item
-    %{title: hd(title), description: description, link: link}
+    %NewsEntry{title: hd(title), description: description, link: link}
   end
 
   defp filter(items, field, value) do
     items
-    |> Enum.filter(fn(i) -> Regex.run(~r/#{value}/i, i[field]) end)
+    |> Enum.filter(fn(i) ->
+      {:ok, value} = Map.fetch(i, field)
+      Regex.run(~r/#{value}/i, value)
+    end)
   end
 end
