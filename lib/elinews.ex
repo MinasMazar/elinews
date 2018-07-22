@@ -15,16 +15,12 @@ defmodule Elinews do
 
   """
 
-  defmodule NewsEntry do
-    defstruct [:title, :description, :link]
-  end
-
   def news_feed do
     @news_feed
   end
 
   def run do
-    run(%{})
+    run([])
   end
 
   def run(criteria) do
@@ -35,13 +31,17 @@ defmodule Elinews do
   @doc """
   iex> Elinews.retrieve_news(title: "trump") |> length() > 0
   true
-  iex> Elinews.retrieve_news(title: "trump", description: "papillon") |> length() > 0
+
+  iex> Elinews.retrieve_news(title: "trump", title: "eijrijer") |> length() > 0
+  true
+
+  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"]) |> length() > 0
   true
   """
 
   def retrieve_news(criteria) do
     retrieve_news()
-    |> filter(criteria)
+    |> filter(criteria, :x)
   end
 
   @doc """
@@ -55,6 +55,25 @@ defmodule Elinews do
     |> Enum.map(&item_map(&1))
   end
 
+  # defp filter(items, criteria) when is_map(criteria) do
+  #   criteria
+  #   |> Enum.map(fn(c) -> filter(items, c) end)
+  #   |> Enum.reduce([], fn(item,acc) -> [acc | item] end)
+  # end
+
+  def filter(items, criteria, mode \\ :union) when is_list(criteria) do
+    Enum.map(criteria, fn ({field, value}) ->
+      Enum.filter(items, fn (item) ->
+        {:ok, content} = Map.fetch(item, field)
+        Regex.run(~r/#{value}/i, content)
+      end)
+    end)
+    |> Enum.reduce([], (fn (item, acc) -> [acc | item] end))
+    # |> (fn (items) ->
+    #   IO.puts(length(items))
+    # end).()
+  end
+
   def display(news_entries) when is_list(news_entries) do
     news_entries |> Enum.map(&display(&1))
   end
@@ -66,6 +85,10 @@ defmodule Elinews do
     IO.puts(news_entry_displayed)
   end
 
+  defmodule NewsEntry do
+    defstruct [:title, :description, :link]
+  end
+
   defp item_map(item) do
     {"item", [], [
         {"title", [], title},
@@ -75,22 +98,5 @@ defmodule Elinews do
       ]
     } = item
     %NewsEntry{title: hd(title), description: description, link: link}
-  end
-
-  defp filter(items, criteria) when is_list(criteria) do
-    criteria
-    |> Enum.map(fn(criteria) ->
-      {field, value} = criteria
-      filter(items, field, value)
-      end)
-    |> Enum.reduce([], fn(item,acc) -> [acc | item] end)
-  end
-
-  defp filter(items, field, value) do
-    items
-    |> Enum.filter(fn(i) ->
-      {:ok, value} = Map.fetch(i, field)
-      Regex.run(~r/#{value}/i, value)
-    end)
   end
 end
