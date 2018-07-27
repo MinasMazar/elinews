@@ -1,5 +1,7 @@
 require IEx
 defmodule Elinews do
+  use Memoize
+
   @moduledoc """
   Documentation for Elinews.
   """
@@ -35,13 +37,13 @@ defmodule Elinews do
   iex> Elinews.retrieve_news(title: "trump", title: "eijrijer") |> length() > 0
   true
 
-  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"]) |> length() > 0
-  true
+  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"], :x)
+  []
   """
 
-  def retrieve_news(criteria) do
+  def retrieve_news(criteria, mode \\ :x) do
     retrieve_news()
-    |> filter(criteria, :x)
+    |> filter(criteria, mode)
   end
 
   @doc """
@@ -49,29 +51,31 @@ defmodule Elinews do
   true
   """
 
-  def retrieve_news do
+  defmemo retrieve_news do
     HTTPotion.get(@news_feed, follow_redirects: true).body
     |> Floki.find("item")
     |> Enum.map(&item_map(&1))
   end
 
-  # defp filter(items, criteria) when is_map(criteria) do
-  #   criteria
-  #   |> Enum.map(fn(c) -> filter(items, c) end)
-  #   |> Enum.reduce([], fn(item,acc) -> [acc | item] end)
-  # end
+  def retrieve_news!(criteria) do
+    Memoize.invalidate(Elinews)
+    retrieve_news(criteria)
+  end
 
-  def filter(items, criteria, mode \\ :union) when is_list(criteria) do
-    Enum.map(criteria, fn ({field, value}) ->
-      Enum.filter(items, fn (item) ->
+  def filter(items, criteria, mode) when is_list(criteria) do
+    {acc, func} = case mode do
+                    :union -> {true, &Kernel.or/2}
+                    :x -> {true, &Kernel.and/2}
+                  end
+    Enum.filter(items, fn (item) ->
+      Enum.map(criteria, fn ({field, value}) ->
         {:ok, content} = Map.fetch(item, field)
-        Regex.run(~r/#{value}/i, content)
+        !!Regex.run(~r/#{value}/i, content)
+      end)
+      |> Enum.reduce(acc, fn (result, acc) ->
+        apply(func, [result, acc])
       end)
     end)
-    |> Enum.reduce([], (fn (item, acc) -> [acc | item] end))
-    # |> (fn (items) ->
-    #   IO.puts(length(items))
-    # end).()
   end
 
   def display(news_entries) when is_list(news_entries) do
