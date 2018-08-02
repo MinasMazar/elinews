@@ -38,11 +38,13 @@ defmodule Elinews do
   iex> Elinews.retrieve_news(title: "trump") |> length() > 0
   true
 
-  iex> Elinews.retrieve_news(title: "trump", title: "eijrijer") |> length() > 0
+  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"], :union) |> length() > 0
   true
 
-  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"], :x)
-  []
+  iex(1)> default_arg = Elinews.retrieve_news(title: "trump", title: "eijrijer")
+  iex(1)> explicit_x = Elinews.retrieve_news([title: "trump", title: "eijrijer"], :x)
+  iex(1)> default_arg == explicit_x
+  true
   """
 
   def retrieve_news(criteria, mode \\ :x) do
@@ -63,6 +65,11 @@ defmodule Elinews do
     end) |> List.flatten
   end
 
+  def retrieve_news! do
+    Memoize.invalidate(Elinews)
+    retrieve_news()
+  end
+
   def retrieve_news!(criteria) do
     Memoize.invalidate(Elinews)
     retrieve_news(criteria)
@@ -70,7 +77,7 @@ defmodule Elinews do
 
   def filter(items, criteria, mode) when is_list(criteria) do
     {acc, func} = case mode do
-                    :union -> {true, &Kernel.or/2}
+                    :union -> {false, &Kernel.or/2}
                     :x -> {true, &Kernel.and/2}
                   end
     Enum.filter(items, fn (item) ->
