@@ -5,20 +5,24 @@ defmodule Elinews do
   @moduledoc """
   Documentation for Elinews.
   """
-  @news_feed "http://www.tgcom24.mediaset.it/rss/ultimissime.xml"
+  @news_feeds ["http://www.tgcom24.mediaset.it/rss/ultimissime.xml"]
 
   @doc """
   Retrieve news feed XML file and extract news informations.
 
   ## Examples
 
-  iex> Elinews.news_feed
-  "http://www.tgcom24.mediaset.it/rss/ultimissime.xml"
+  iex> Elinews.news_feeds |> length() > 0
+  true
 
   """
 
-  def news_feed do
-    @news_feed
+  def news_feeds do
+    feeds = Application.get_env(:elinews, :news_feeds)
+    case length(feeds) > 0 do
+      true -> feeds
+      false -> @news_feeds
+    end
   end
 
   def run do
@@ -52,9 +56,11 @@ defmodule Elinews do
   """
 
   defmemo retrieve_news do
-    HTTPotion.get(@news_feed, follow_redirects: true).body
-    |> Floki.find("item")
-    |> Enum.map(&item_map(&1))
+    Enum.map(news_feeds(), fn (url) ->
+      HTTPotion.get(url, follow_redirects: true).body
+      |> Floki.find("item")
+      |> Enum.map(&item_map(&1))
+    end) |> List.flatten
   end
 
   def retrieve_news!(criteria) do

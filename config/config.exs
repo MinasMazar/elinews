@@ -28,3 +28,37 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+config :elinews, news_feeds: [
+  "http://www.ansa.it/sito/notizie/topnews/topnews_rss.xml",
+  "http://www.ansa.it/sito/ansait_rss.xml",
+  "http://www.ansa.it/sito/notizie/cronaca/cronaca_rss.xml",
+  "http://www.ansa.it/sito/notizie/politica/politica_rss.xml",
+  "http://www.ansa.it/sito/notizie/mondo/mondo_rss.xml",
+  "http://www.ansa.it/sito/notizie/economia/economia_rss.xml",
+  "http://www.ansa.it/sito/notizie/sport/calcio/calcio_rss.xml",
+  "http://www.ansa.it/sito/notizie/sport/sport_rss.xml",
+  "http://www.ansa.it/sito/notizie/cultura/cinema/cinema_rss.xml",
+  "http://www.ansa.it/sito/notizie/cultura/cultura_rss.xml",
+  "http://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml",
+  "http://www.ansa.it/abruzzo/notizie/abruzzo_rss.xml",
+  "http://www.ansa.it/basilicata/notizie/basilicata_rss.xml",
+  "http://www.ansa.it/calabria/notizie/calabria_rss.xml",
+  "http://www.ansa.it/campania/notizie/campania_rss.xml",
+  "http://www.ansa.it/emiliaromagna/notizie/emiliaromagna_rss.xml",
+  "http://www.ansa.it/friuliveneziagiulia/notizie/friuliveneziagiulia_rss.xml",
+  "http://www.ansa.it/lazio/notizie/lazio_rss.xml",
+  "http://www.ansa.it/liguria/notizie/liguria_rss.xml",
+  "http://www.ansa.it/lombardia/notizie/lombardia_rss.xml",
+  "http://www.ansa.it/marche/notizie/marche_rss.xml",
+  "http://www.ansa.it/molise/notizie/molise_rss.xml",
+  "http://www.ansa.it/piemonte/notizie/piemonte_rss.xml",
+  "http://www.ansa.it/puglia/notizie/puglia_rss.xml",
+  "http://www.ansa.it/sardegna/notizie/sardegna_rss.xml",
+  "http://www.ansa.it/sicilia/notizie/sicilia_rss.xml",
+  "http://www.ansa.it/toscana/notizie/toscana_rss.xml",
+  "http://www.ansa.it/trentino/notizie/trentino_rss.xml",
+  "http://www.ansa.it/umbria/notizie/umbria_rss.xml",
+  "http://www.ansa.it/valledaosta/notizie/valledaosta_rss.xml",
+  "http://www.ansa.it/veneto/notizie/veneto_rss.xml",
+]
