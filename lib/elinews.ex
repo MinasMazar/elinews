@@ -52,7 +52,7 @@ defmodule Elinews do
 
   defmemo retrieve_news do
     Enum.map(news_feeds(), fn (url) ->
-      HTTPotion.get(url, follow_redirects: true).body
+      @adapters.http_client.get(url, follow_redirects: true).body
       |> Floki.find("item")
       |> Enum.map(&item_map(&1))
     end) |> List.flatten
