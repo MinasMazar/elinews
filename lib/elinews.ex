@@ -1,4 +1,5 @@
 require IEx
+
 defmodule Elinews do
   use Memoize
 
@@ -16,6 +17,7 @@ defmodule Elinews do
   true
 
   """
+  @display_impl Application.get_env(:elinews, :display_impl)
 
   def news_feeds do
     feeds = Application.get_env(:elinews, :news_feeds)
@@ -29,31 +31,22 @@ defmodule Elinews do
     run([])
   end
 
-  def run(criteria) do
-    retrieve_news(criteria)
-    |> display()
-  end
-
-  @doc """
-  iex> Elinews.retrieve_news(title: "trump") |> length() > 0
-  true
-
-  iex> Elinews.retrieve_news([title: "trump", title: "eijrijer"], :union) |> length() > 0
-  true
-
-  iex(1)> default_arg = Elinews.retrieve_news(title: "trump", title: "eijrijer")
-  iex(1)> explicit_x = Elinews.retrieve_news([title: "trump", title: "eijrijer"], :x)
-  iex(1)> default_arg == explicit_x
-  true
-  """
-
-  def retrieve_news(criteria, mode \\ :x) do
+  def run(criteria, mode \\ :x) do
     retrieve_news()
     |> filter(criteria, mode)
+    |> display
   end
 
   @doc """
-  iex> Elinews.retrieve_news |> length() > 0
+  iex> Elinews.run(title: "trump") |> length() > 0
+  true
+
+  iex> Elinews.run([title: "trump", title: "eijrijer"], :union) |> length() > 0
+  true
+
+  iex(1)> default_arg = Elinews.run(title: "trump", title: "eijrijer")
+  iex(1)> explicit_x = Elinews.run([title: "trump", title: "eijrijer"], :x)
+  iex(1)> default_arg == explicit_x
   true
   """
 
@@ -70,16 +63,8 @@ defmodule Elinews do
     retrieve_news()
   end
 
-  def retrieve_news!(criteria) do
-    Memoize.invalidate(Elinews)
-    retrieve_news(criteria)
-  end
-
   def filter(items, criteria, mode) when is_list(criteria) do
-    {acc, func} = case mode do
-                    :union -> {false, &Kernel.or/2}
-                    :x -> {true, &Kernel.and/2}
-                  end
+    {acc, func} = filter_reduction_for_mode(mode)
     Enum.filter(items, fn (item) ->
       Enum.map(criteria, fn ({field, value}) ->
         {:ok, content} = Map.fetch(item, field)
@@ -99,7 +84,9 @@ defmodule Elinews do
     news_entry_displayed = """
     News entry: #{news_entry.title}
     """
-    IO.puts(news_entry_displayed)
+    # Application.fetch_env!(:elinews, :adapters)
+    # Elinews.Display.puts news_entry_displayed
+    @display_impl.puts news_entry_displayed
   end
 
   defmodule NewsEntry do
@@ -115,5 +102,12 @@ defmodule Elinews do
       ]
     } = item
     %NewsEntry{title: hd(title), description: description, link: link}
+  end
+
+  defp filter_reduction_for_mode(mode) do
+    case mode do
+      :union -> {false, &Kernel.or/2}
+      :x -> {true, &Kernel.and/2}
+    end
   end
 end

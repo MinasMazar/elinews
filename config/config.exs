@@ -27,7 +27,7 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-#     import_config "#{Mix.env}.exs"
+    import_config "#{Mix.env}.exs"
 
 config :elinews, news_feeds: [
   "http://www.ansa.it/sito/notizie/topnews/topnews_rss.xml",
