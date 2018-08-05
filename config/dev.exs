@@ -1,3 +1,5 @@
 use Mix.Config
 
-config :elinews, display_impl: Elinews.Display
+config :elinews, adapters: %{
+  display: Elinews.Display
+}

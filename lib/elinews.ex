@@ -17,7 +17,7 @@ defmodule Elinews do
   true
 
   """
-  @display_impl Application.get_env(:elinews, :display_impl)
+  @adapters Application.get_env(:elinews, :adapters)
 
   def news_feeds do
     feeds = Application.get_env(:elinews, :news_feeds)
@@ -84,9 +84,7 @@ defmodule Elinews do
     news_entry_displayed = """
     News entry: #{news_entry.title}
     """
-    # Application.fetch_env!(:elinews, :adapters)
-    # Elinews.Display.puts news_entry_displayed
-    @display_impl.puts news_entry_displayed
+    @adapters.display.puts news_entry_displayed
   end
 
   defmodule NewsEntry do
