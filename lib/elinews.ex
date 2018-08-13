@@ -34,7 +34,7 @@ defmodule Elinews do
   def run(criteria, mode \\ :x) do
     retrieve_news()
     |> filter(criteria, mode)
-    |> display
+    # |> display
   end
 
   @doc """
@@ -58,9 +58,8 @@ defmodule Elinews do
     end) |> List.flatten
   end
 
-  def retrieve_news! do
+  def reset_news_cache! do
     Memoize.invalidate(Elinews)
-    retrieve_news()
   end
 
   def filter(items, criteria, mode) when is_list(criteria) do
@@ -82,7 +81,11 @@ defmodule Elinews do
 
   def display(news_entry) do
     news_entry_displayed = """
-    News entry: #{news_entry.title}
+    ## #{news_entry.title}
+    #
+    # #{news_entry.description}
+    #
+
     """
     @adapters.display.puts news_entry_displayed
   end
